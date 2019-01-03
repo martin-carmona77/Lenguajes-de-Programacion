@@ -1,0 +1,231 @@
+\documentclass[11pt, a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{listings}
+
+\begin{document}
+\title{Tarea 2: \\Lenguajes de Programaci\'on}
+\author{
+  Araujo Chavez Mauricio\\
+  \texttt{312210047}
+  \and
+  Carmona Mendoza Mat\'in\\
+  \texttt{313075977}
+}
+\date{}
+\maketitle
+
+\section*{1. Escribe las reglas de evaluación (semántica dinámica) para cada una de las expresiones anteriores. Debes indicar cuáles expresiones son valores.}
+Considera la gramática:
+$$ e\ ::=\ x|n|true|false|e+e|if\ e\ then\ e\ else\ e|iszero\ e|let\ x=e\ in\ e\ end|e<e|e=e|\neg e  $$ 
+con $n\in \mathbb{Z}$. La extensión al paradigma imperativo se hace de la siguiente manera:
+$$ l_{n}|e_{1}\ :=\ e_{2}|ref\ e|!e|e_{1};e_{2}|while\ e_{1}\ do\ e_{2}|() $$
+
+\begin{itemize}
+	\item Tomamos a $l_{n}$ y $()$ como valores.
+	\item $e_{1}\ :=\ e_{2}$
+		  $$\frac{}{<\mu,l:=v> \rightarrow <\mu[l\rightarrow v],()>}$$
+		  $$\frac{<\mu,e_{2}> \rightarrow <\mu',e'_{2}>}{<\mu,l := e_{2}> \rightarrow <\mu',l := e'_{2}>}$$
+		  $$ \frac{<\mu,e_{1}> \rightarrow <\mu',e'_{1}>}{<\mu,e_{1} := e_{2}> \rightarrow <\mu',e'_{1}:=e_{2}>} $$
+	\item $ref\ e$
+		  $$\frac{l\notin dom(\mu)}{<\mu,ref\ v> \rightarrow <(\mu,l\rightarrow v),l>}$$
+		  Donde $dom(\mu)$ es el conjunto de direcciones de la memoria.
+		  $$\frac{<\mu,e> \rightarrow <\mu',e'>}{<\mu,ref\ e> \rightarrow <\mu',ref\ e'>}$$
+	\item $!e$
+		  $$\frac{\mu(l) = v}{<\mu,!l> \rightarrow <\mu,v>}$$
+		  $$\frac{<\mu,e> \rightarrow <\mu',e'>}{<\mu,!e> \rightarrow <\mu',!e'>}$$
+	\item $e_{1};e_{2}$
+		  $$ \frac{}{void;e_{2} \rightarrow e_{2}} $$
+		  $$ \frac{e_{1} \rightarrow e'_{1}}{e_{1};e_{2}\rightarrow e'_{1};e_{2}} $$
+	\item $while\ e_{1}\ do\ e_{2}$
+		  $$\frac{}{<\mu,while(e_{1},e_{2}> \rightarrow <\mu, if\ e_{1}\ then\ e_{2};while(e_{1},e_{2})\ else\ ()>}$$
+\end{itemize}
+
+\section*{2. Escribe la ejecución detallada de los tres programas descritos.}
+\begin{itemize}
+	\item $p_{1} \rightleftharpoons$
+		\begin{lstlisting}
+     let x = ref (iszero(3+4)) in
+	     let y = ref (if !x then 3 else 4) in
+		     let z = if !y < 10 then !y + 6 else 7+!y
+	     end
+     end
+		\end{lstlisting}
+	$$<\emptyset,\ p_{1}>$$
+	$$ (iszero(3+4)) $$
+	$$ (iszero(7)) $$
+	$$ false $$
+	$$<l_{x} \rightarrow false,\ let\ y\ =\ ref\ (if\ !l_{x}\ then\ 3\ else\ 4)\ in\ let\ z\ =\ if\ !y\ <\ 10\ then\ !y\ +\ 6\ else\ 7+!y\ end >$$
+	$$ (if\ false\ then\ 3\ else\ 4) $$
+	$$ 4 $$
+	$$ <(l_{x}\rightarrow false,\ l_{y}\rightarrow4),\ let\ z\ =\ if\ !l_{y}\ <\ 10\ then\ !l_{y}\ +\ 6\ else\ 7+!l_{y}> $$
+	$$ if\ 4\ <\ 10\ then\ !l_{y}\ +\ 6\ else\ 7\ +\ !l_{y} $$
+	$$ if\ true\ then\ !l_{y}\ +\ 6\ else\ 7\ +\ !l_{y}  $$
+	$$ !l_{y}\ +\ 6 $$
+	$$ 4\ +\ 6 $$
+	$$10$$
+	$$<(l_{x}\rightarrow false,\ l_{y}\rightarrow4)\ l_{z}\rightarrow10,()>$$
+	\item $p_{2} \rightleftharpoons$
+		\begin{lstlisting}
+	 let z = ref 5 in
+	 	 let w = ref 3 in
+	 	     while (0 < !w)
+	 	         z := 5+3;
+	 	         w := !w-1
+	 	 end
+	 	 !z
+	 end
+		\end{lstlisting}
+	$$<\emptyset,p_{2}>$$
+	$$<l_{z}\rightarrow5,\ let\ w\ =\ ref\ 3\ in\ while\ (0\ <\ !w)\ l_{z}\ :=\ 5+3;\ w\ :=\ !w-1\ end\ !l_{z}\ >$$
+	$$<(l_{z}\rightarrow5, l_{w}\rightarrow3),\ while\ (0\ <\ !l_{w})\ l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1\ !l_{z}>$$
+	$$<(l_{z}\rightarrow5, l_{w}\rightarrow3), if\ (0\ <\ !l_{w})\ then(l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1;\ while\ (0\ <\ !l_{w})\ l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1)$$ 
+	$$else\ ()\ !l_{z}> $$
+	$$(0\ <\ !l_{w})$$
+	$$(0\ <\ 3)$$
+	$$ true $$
+	$$if\ true\ then(l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1;\ while\ (0\ <\ !l_{w})\ l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1)\ else\ () $$
+	$$l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1;\ while\ (0\ <\ !l_{w})\ l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1$$
+	$$l_{z} \rightarrow 8$$
+	$$l_{w} \rightarrow 3-1 $$
+	$$l_{w} \rightarrow 2 $$
+	Por comodidad definimos $while\ (0\ <\ !l_{w})\ l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1$ como \textit{ciclo}\\
+	Y a $if\ (0\ <\ !l_{w})\ then(l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1;\ ciclo)\ else\ ()$ como cicloIf
+	$$<(l_{z}\rightarrow8, l_{w}\rightarrow2),ciclo\ !l_{z}>$$
+	$$<(l_{z}\rightarrow8, l_{w}\rightarrow2),cicloIf\ !l_{z}>$$
+	$$(0\ <\ !l_{w})$$
+	$$(0\ <\ 2)$$
+	$$ true $$
+	$$if\ true\ then(l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1;\ while\ (0\ <\ !l_{w})\ l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1)\ else\ ()$$
+	$$l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1;\ ciclo $$
+	$$l_{z} \rightarrow 8$$
+	$$l_{w} \rightarrow 2-1 $$
+	$$l_{w} \rightarrow 1 $$
+	$$<(l_{z}\rightarrow8, l_{w}\rightarrow1),ciclo\ !l_{z}>$$
+	$$<(l_{z}\rightarrow8, l_{w}\rightarrow1),cicloIf\ !l_{z}>$$
+	$$(0\ <\ !l_{w})$$
+	$$(0\ <\ 1)$$
+	$$ true $$
+	$$if\ true\ then(l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1;\ while\ (0\ <\ !l_{w})\ l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1)\ else\ ()$$
+	$$l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1;\ ciclo $$
+	$$l_{z} \rightarrow 8$$
+	$$l_{w} \rightarrow 1-1 $$
+	$$l_{w} \rightarrow 0 $$
+	$$<(l_{z}\rightarrow8, l_{w}\rightarrow0),ciclo\ !l_{z}>$$
+	$$<(l_{z}\rightarrow8, l_{w}\rightarrow0),cicloIf\ !l_{z}>$$
+	$$(0\ <\ !l_{w})$$
+	$$(0\ <\ 0)$$
+	$$ false $$
+	$$if\ false\ then(l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1;\ while\ (0\ <\ !l_{w})\ l_{z}\ :=\ 5+3;\ l_{w}\ :=\ !l_{w}-1)\ else\ ()$$
+	$$()$$
+	$$<(l_{z}\rightarrow8,()),!l_{z}>$$
+	$$<(l_{z}\rightarrow8,()),8>$$
+	\item $p_{3} \rightleftharpoons$
+		\begin{lstlisting}
+	 let z = ref 10 in
+	     let w = ref 7 in
+	         while (0 < !w)
+	             z := !z-1;
+	             w := !w-1
+	     end
+	     if !z = 3 then true else false
+	 end
+		\end{lstlisting}
+	$$<\emptyset,p_{3}>$$
+	$$<l_{z}\rightarrow10,\ let\ w\ = \ ref\ 7\ in\ while\ (0\ <\ !w)\ l_{z}\ :=\ !l_{z}-1;\ w\ :=\ !w-1\ end\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$<(l_{z}\rightarrow10,l_{w}\rightarrow7)\ while\ (0\ <\ !l_{w})\ l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1\ \ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$<(l_{z}\rightarrow10,l_{w}\rightarrow7)\ if\ (0\ <\ !l_{w})\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;(while\ (0\ <\ !l_{w})\ l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1))$$
+	$$ else\ ()\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$(0\ <\ l_{w})$$
+	$$(0\ <\ 7)$$
+	$$true$$
+	$$if\ true\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;(while\ (0\ <\ !l_{w})\ l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1))\ else\ ()$$
+	$$l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;\ while\ (0\ <\ !l_{w})\ l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1$$
+	$$l_{z} \rightarrow 10-1$$
+	$$l_{z} \rightarrow 9$$
+	$$l_{w} \rightarrow 7-1$$
+	$$l_{w} \rightarrow 6$$
+	Por comodidad definimos $while\ (0\ <\ !l_{w})\ l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1$ como \textit{ciclo}\\
+	Y a $if\ (0\ <\ !l_{w})\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;ciclo)\ else\ ()$ como cicloIf
+	$$<(l_{z} \rightarrow 9, l_{w}\rightarrow6),ciclo\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$<(l_{z} \rightarrow 9, l_{w}\rightarrow6),cicloIf\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$(0\ <\ l_{w})$$
+	$$(0\ <\ 6)$$
+	$$true$$
+	$$if\ true\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;ciclo)\ else\ ()$$
+	$$l_{z} \rightarrow 9-1$$
+	$$l_{z} \rightarrow 8$$
+	$$l_{w} \rightarrow 6-1$$
+	$$l_{w} \rightarrow 5$$
+	$$<(l_{z} \rightarrow 8, l_{w}\rightarrow5),ciclo\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$<(l_{z} \rightarrow 8, l_{w}\rightarrow5),cicloIf\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$(0\ <\ l_{w})$$
+	$$(0\ <\ 5)$$
+	$$true$$
+	$$if\ true\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;ciclo)\ else\ ()$$
+	$$l_{z} \rightarrow 8-1$$
+	$$l_{z} \rightarrow 7$$
+	$$l_{w} \rightarrow 5-1$$
+	$$l_{w} \rightarrow 4$$
+	$$<(l_{z} \rightarrow 7, l_{w}\rightarrow4),ciclo\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$<(l_{z} \rightarrow 7, l_{w}\rightarrow4),cicloIf\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$(0\ <\ l_{w})$$
+	$$(0\ <\ 4)$$
+	$$true$$
+	$$if\ true\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;ciclo)\ else\ ()$$
+	$$l_{z} \rightarrow 7-1$$
+	$$l_{z} \rightarrow 6$$
+	$$l_{w} \rightarrow 4-1$$
+	$$l_{w} \rightarrow 3$$
+	$$<(l_{z} \rightarrow 6, l_{w}\rightarrow3),ciclo\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$<(l_{z} \rightarrow 6, l_{w}\rightarrow3),cicloIf\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$(0\ <\ l_{w})$$
+	$$(0\ <\ 3)$$
+	$$true$$
+	$$if\ true\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;ciclo)\ else\ ()$$
+	$$l_{z} \rightarrow 6-1$$
+	$$l_{z} \rightarrow 5$$
+	$$l_{w} \rightarrow 3-1$$
+	$$l_{w} \rightarrow 2$$
+	$$<(l_{z} \rightarrow 5, l_{w}\rightarrow2),ciclo\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$<(l_{z} \rightarrow 5, l_{w}\rightarrow2),cicloIf\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$(0\ <\ l_{w})$$
+	$$(0\ <\ 2)$$
+	$$true$$
+	$$if\ true\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;ciclo)\ else\ ()$$
+	$$l_{z} \rightarrow 5-1$$
+	$$l_{z} \rightarrow 4$$
+	$$l_{w} \rightarrow 2-1$$
+	$$l_{w} \rightarrow 1$$
+	$$<(l_{z} \rightarrow 4, l_{w}\rightarrow1),ciclo\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$<(l_{z} \rightarrow 4, l_{w}\rightarrow1),cicloIf\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$(0\ <\ l_{w})$$
+	$$(0\ <\ 1)$$
+	$$true$$
+	$$if\ true\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;ciclo)\ else\ ()$$
+	$$l_{z} \rightarrow 4-1$$
+	$$l_{z} \rightarrow 3$$
+	$$l_{w} \rightarrow 1-1$$
+	$$l_{w} \rightarrow 0$$
+	$$<(l_{z} \rightarrow 3, l_{w}\rightarrow0),ciclo\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$<(l_{z} \rightarrow 3, l_{w}\rightarrow0),cicloIf\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$(0\ <\ l_{w})$$
+	$$(0\ <\ 0)$$
+	$$false$$
+	$$if\ false\ then(l_{z}\ :=\ !l_{z}-1;\ l_{w}\ :=\ !l_{w}-1;ciclo)\ else\ ()$$
+	$$()$$
+	$$<(l_{z}\rightarrow3,()),\ if\ !l_{z}\ =\ 3\ then\ true\ else\ false>$$
+	$$if\ !l_{z}\ =\ 3\ then\ true\ else\ false$$
+	$$if\ 3\ =\ 3\ then\ true\ else\ false$$
+	$$if\ true\ then\ true\ else\ false$$
+	$$true$$
+	$$<(l_{z}\rightarrow3,()),\ true>$$
+\end{itemize}
+
+\end{document}

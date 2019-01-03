@@ -1,0 +1,242 @@
+\documentclass[11pt, a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{natbib}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{ upgreek }
+\usepackage{ tipa }
+
+\begin{document}
+\title{Tarea 6: \\Lenguajes de Programaci\'on}
+\author{
+  Araujo Chávez Mauricio\\
+  \texttt{312210047}
+  \and
+  Carmona Mendoza Mart\'in\\
+  \texttt{313075977}
+}
+\date{}
+\maketitle
+
+\section*{Considera la siguiente gramatica:}
+$$ e\ :=\ x\mid n\mid true\mid false\mid \neg e\mid e+e\mid if\ e\ then\ e\ else\ e\mid let\ x\ =\ e\ in\ e\mid e\ <\ e\mid \lambda x.e\mid e\ e $$ 
+
+extendida con la expresi\'on: 
+
+$$|letcc(k.e)|continue(e_{1}\ e_{2})$$ 
+
+y con el valor: 
+
+$$cont(P)$$ 
+
+Donde P es una pila de control.
+	
+\section*{1.Escribe todos los marcos de la operacion:}
+
+	\begin{itemize}
+		\item Tomamos a x, n, true, false y cont(P) como valores entonces  no tienen marco.
+		\item letcc no es un valor pero no necesita marco.
+		\item $\neg e$
+			$$ \frac{}{not(-)\ marco} $$
+		\item $e_{1}+e_{2}$
+			$$ \frac{}{suma(-,e_{1})\ marco}\ \ \ \ \frac{}{suma(v_{1},-)\ marco} $$
+		\item $if\ e\ then\ e_{1}\ else\ e_{2}$
+			$$ \frac{}{if(-,e_{1},e_{2})\ marco} $$
+		\item $let\ x\ =\ e\ in\ e_{2}$
+			$$ \frac{}{let(-,x.e_{2})\ marco} $$
+		\item $ e_{1}\ <\ e_{2} $
+			$$ \frac{}{menor(-,e_{2})\ marco}\ \ \ \ \frac{}{menor(v_{1},-)\ marco} $$
+		\item $e_{1}\ e_{2}$
+			$$ \frac{}{app(-,e_{2})\ marco}\ \ \ \ \frac{}{app(v_{1},-)\ marco} $$
+		\item $continue(e_{1}\ e_{2})$		
+			$$ \frac{}{continue(-,e_{2})\ marco}\ \ \ \ \frac{}{continue(v_{1},-)\ marco} $$
+	\end{itemize}
+\section*{2.Describe todas las transiciones de la m\'aquina  K.}
+
+	\begin{itemize}
+		\item Valores
+			$$\frac{}{P \succ v \rightarrow_{\mathcal{K}} P \prec v}  $$
+		\item $\neg e$
+			$$ \frac{}{P \succ not(e) \rightarrow_{\mathcal{K}} not(-); P \succ e} $$
+			$$\frac{}{not(-); P \prec v}$$
+		\item $e_{1}+e_{2}$
+			$$ \frac{}{P \succ suma(e_{1},e_{2}) \rightarrow_{\mathcal{K}} suma(-,e_{2}); P \succ e_{1}}$$
+			$$ \frac{}{suma(-,e_{2});P \prec v \rightarrow_{\mathcal{K}} suma(v,-); P \succ e_{2}}$$
+		\item $if\ e\ then\ e_{1}\ else\ e_{2}$
+			$$ \frac{}{P \succ if(e,e_{1},e_{2}) \rightarrow_{\mathcal{K}} if(-,e_{1},e_{2}); P \succ e}$$
+			$$ \frac{}{if(-,e_{1},e_{2});P \prec true \rightarrow_{\mathcal{K}}  P \succ e_{1}}$$
+			$$ \frac{}{if(-,e_{1},e_{2});P \prec false \rightarrow_{\mathcal{K}}  P \succ e_{2}}$$
+		\item $let\ x\ =\ e\ in\ e_{2}$
+			$$ \frac{}{P \succ let(e_{1},x.e_{2}) \rightarrow_{\mathcal{K}} let(-,x.e_{2});P \succ e_{1} } $$
+			$$ \frac{}{let(-,x.e_{2}); P \prec v \rightarrow_{\mathcal{K}} P \succ e[x:=v] } $$
+		\item $ e_{1}\ <\ e_{2} $
+			$$ \frac{}{P \succ menor(e_{1},e_{2}) \rightarrow_{\mathcal{K}} menor(-,e_{2}); P \succ e_{1}}$$
+			$$ \frac{}{menor(-,e_{2});P \prec v \rightarrow_{\mathcal{K}} menor(v,-); P \succ e_{2}}$$
+		\item $e_{1}\ e_{2}$
+			$$ \frac{}{P \succ app(e_{1},e_{2}) \rightarrow_{\mathcal{K}} if(-,e_{2}); P \succ e_{1}}$$
+			$$ \frac{}{app(-,e_{2});P \prec v \rightarrow_{\mathcal{K}}  app(v,-); P \succ e_{2}}$$
+			$$ \frac{}{app(lam(T,x.e),-);P \prec v \rightarrow_{\mathcal{K}}  P \succ e[x := v]}$$
+		\item $Letcc[T](k.e)$
+		$$\frac{}{P \succ letcc[T](k.e) \rightarrow_{\mathcal{K}} P \succ e[k:= cont(p)]}$$	
+		\item $continue(e_{1}\ e_{2})$		
+			$$ \frac{}{P \succ continue(e_{1},e_{2}) \rightarrow_{\mathcal{K}} continue(-,e_{2}); P \succ e_{1}}$$
+			$$ \frac{}{continue(-,e_{2});P \prec v_{1} \rightarrow_{\mathcal{K}} continue(v_{1},-); P \succ e_{2}}$$
+			$$\frac{}{continue(cont(P'), -); P \prec v_{2} \rightarrow_{\mathcal{K}} P' \prec v_{2}}$$
+	\end{itemize}
+
+
+\section*{3.Escribe cinco programas y ejecutalos en la m\'aquina K. Cada programa debe usar al menos cuatro 
+expresiones del lenguaje y ademas hacer uso de los operadores   $letcc$ y $continue$. Debes haber utilizado todas
+las expresiones del lenguaje entre todos los programas que escribiste.}
+
+\begin{itemize}
+\item $p_{1} \rightleftharpoons$
+	\begin{lstlisting}
+	 e = letcc(k_{1}.8<continue(k_{1},letcc(k_{2}.continue(k_{2},3)+4)))
+	\end{lstlisting}		
+	
+Renombraremos algunas expresiones, por el tamaño que  tienen, de la siguiente forma:
+
+$e' = 8 < continue(cont($square$,letcc(k_{2}.continue(k_{2},3)+4))$\\
+$e'' = letcc(k_{2}.continue(k_{2},3)+4)$\\
+$P'= continue(cont(\square, -);lt(8,-)$\\
+
+ $$\quad \square \succ e[k:=cont(\square)] \rightarrow_{\mathcal{K}}$$
+ $$\quad \square \succ 8 < continue(cont(\square), e'') \rightarrow_{\mathcal{K}}$$
+ $$\quad lt(-,e') \succ 8 \rightarrow_{\mathcal{K}}$$ 
+ $$\quad lt(-,e') \prec 8 \rightarrow_{\mathcal{K}}$$ 
+ $$\quad lt(8,-) \succ e' \rightarrow_{\mathcal{K}}$$
+ $$\quad continue(-,e'');lt(8,-) \succ cont(\square) \rightarrow_{\mathcal{K}}$$
+ $$\quad continue(-,e'');lt(8,-) \prec cont(\square) \rightarrow_{\mathcal{K}}$$
+ $$\quad continue(cont(\square), -);lt(8,-) \succ e'' \rightarrow_{\mathcal{K}}$$
+ $$\quad \mathcal{P}' \succ continue(cont(\mathcal{P}'),3)+4 \rightarrow_{\mathcal{K}}$$
+ $$\quad suma(-,4);\mathcal{P}' \succ continue(cont(\mathcal{P}'),3) \rightarrow_{\mathcal{K}}$$
+ $$\quad continue(-,3);suma(-,4); \mathcal{P}' \succ cont(\mathcal{P}') \rightarrow_{\mathcal{K}}$$
+ $$\quad continue(-,3);suma(-,4); \mathcal{P}' \prec cont(\mathcal{P}') \rightarrow_{\mathcal{K}}$$
+ $$\quad continue(cont(e'),-);suma(-,4);\mathcal{P}' \succ 3 \rightarrow_{\mathcal{K}}$$
+ $$\quad continue(cont(e'),-);suma(-,4);\mathcal{P}' \prec 3 \rightarrow_{\mathcal{K}}$$
+ $$\quad continue(cont(\square),-);lt(8,-) \prec 3 \rightarrow_{\mathcal{K}}$$
+ $$\quad \square \prec 3$$
+
+\item $p_{2} \rightleftharpoons$ 
+ \begin{lstlisting}[mathescape=true]
+      e =  ($\lambda$x.x + 3)(let x=true in if $\neg$x then 7 
+       else 2 + (letcc(k.3 + continue(k,($\lambda$y.y + y)5)))
+		\end{lstlisting}
+
+Renombraremos algunas expresiones, por el tamaño que  tienen, de la siguiente forma:
+
+$e' = let \quad x=true \quad in \quad if \quad \neg x \quad then \quad 7 \quad else \quad 2+(letcc(k.3+continue(k,(\lambda y.y+y)5)))$\\
+$e'' = if \quad \neg x \quad then \quad 7 \quad else \quad 2+(letcc(k.3+continue(k,(\lambda y.y+y)5)))$\\
+$e''' = 2+(letcc(k.3+continue(k,(\lambda y.y+y)5)))$\\
+$e'''' = letcc(k,(\lambda y.y+y)5))$ \\
+$e''''' = continue(cont(\mathcal{P}'),(\lambda y.y+y)5)$\\
+$P'' = continue(cont(P'),-),suma(3,-;P')$
+
+ $$\quad \square \succ e \rightarrow_{\mathcal{K}}$$
+ $$\quad app(-,e') \succ \lambda x.x+3 \rightarrow_{\mathcal{K}}$$
+ $$\quad app(-,e') \prec \lambda x.x+3 \rightarrow_{\mathcal{K}}$$
+ $$\quad app(\lambda x.x+3,-) \succ e' \rightarrow_{\mathcal{K}}$$
+$$\quad let(-,x.e'');app(\lambda x.x+3,-) \succ true \rightarrow_{\mathcal{K}}$$
+$$\quad let(-,x.e'');app(\lambda x.x+3,-) \prec true \rightarrow_{\mathcal{K}}$$
+$$\quad app(\lambda x.x+3,-)\succ if \quad \neg true \quad then \quad 7 \quad else \quad e''' \rightarrow_{\mathcal{K}}$$
+$$\quad if(-,7,e'''); app(\lambda x.x+3,-) \succ \neg true \rightarrow_{\mathcal{K}}$$
+$$\quad not(-);if(-,7,e''');app(\lambda x.x+3,-) \succ true \rightarrow_{\mathcal{K}}$$
+$$\quad not(-);if(-,7,e''');app(\lambda x.x+3,-) \prec true \rightarrow_{\mathcal{K}}$$
+$$\quad if(-,7,e''');app(\lambda x.x+3,-) \succ false \rightarrow_{\mathcal{K}}$$
+$$\quad if(-,7,e''');app(\lambda x.x+3,-) \prec false \rightarrow_{\mathcal{K}}$$
+$$\quad app(\lambda x.x+3,-) \succ e''' \rightarrow_{\mathcal{K}}$$
+$$\quad suma(-,e'''');app(\lambda x.x+3,-) \succ 2 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(-,e'''');app(\lambda x.x+3,-) \prec 2 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(2,-);app(\lambda x.x+3) \succ e'''' \rightarrow_{\mathcal{K}}$$
+$$\quad P' = suma(2,-);app(\lambda x.x+3) \succ 3+continue(cont(P'),(\lambda y.y+y)5) \rightarrow_{\mathcal{K}}$$
+$$\quad suma(-,e''''');P' \succ 3 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(-,e''''');P' \prec 3 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(3,-);P' \succ e''''' \rightarrow_{\mathcal{K}}$$
+$$\quad continue(-,(\lambda y.y+y)5);suma(3,-);P' \succ cont(P') \rightarrow_{\mathcal{K}}$$
+$$\quad continue(-,(\lambda y.y+y)5);suma(3,-);P' \prec cont(P') \rightarrow_{\mathcal{K}}$$
+$$\quad continue(cont(P'),-);suma(3,-);P' \succ (\lambda y.y+y)5 \rightarrow_{\mathcal{K}}$$
+$$\quad app(-,5);continue(cont(P'),-);suma(3,-);P' \succ \lambda y.y+y \rightarrow_{\mathcal{K}}$$
+$$\quad app(-,5);continue(cont(P'),-);suma(3,-);\mathcal{P}\prime \prec \lambda y.y+y \rightarrow_{\mathcal{K}}$$
+$$\quad app(\lambda y.y+y,-);continue(cont(P'),-);suma(3,-);P' \succ 5 \rightarrow_{\mathcal{K}}$$
+$$\quad app(\lambda y.y+y,-);continue(cont(P'),-);suma(3,-);P' \prec 5 \rightarrow_{\mathcal{K}}$$
+$$\quad continue(cont(P'),-);suma(3,-);P' \succ \lambda y.y+y[y:=5]\equiv 5+5 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(-,5);P'' \succ 5 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(-,5);P'' \prec 5 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(5,-);P'' \succ 5 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(5,-);P'' \prec 5 \rightarrow_{\mathcal{K}}$$
+$$\quad P'' \succ 10 \rightarrow_{\mathcal{K}}$$
+$$\quad P'' \prec 10 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(2,-);app(\lambda x.x+3,-)\prec10 \rightarrow_{\mathcal{K}}$$
+$$\quad app(\lambda x.x+3,-) \succ 12 \rightarrow_{\mathcal{K}}$$
+$$\quad app(\lambda x.x+3,-) \prec 12 \rightarrow_{\mathcal{K}}$$
+$$\quad \square \succ \lambda x.x+3[x:=12]\equiv 12+3 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(-,3) \succ 12 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(-,3) \prec 12 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(12,-) \succ 3 \rightarrow_{\mathcal{K}}$$
+$$\quad suma(12,-) \prec 3 \rightarrow_{\mathcal{K}}$$
+$$\quad \square \succ 15 \rightarrow_{\mathcal{K}}$$
+$$\quad \square \prec 15 $$
+
+\item $p_{3} \rightleftharpoons$ 
+ \begin{lstlisting}[mathescape=true]
+       2 + letcc k in 3 + (continue k 0)
+		\end{lstlisting}
+		
+Renombraremos algunas expresiones, por el tamaño que  tienen, de la siguiente forma:
+
+$e' = letcc \quad k \quad in \quad 3 \quad + \quad (continue \quad k \quad 0)$\\
+$e'' = cont(suma(2,-); \square)$\\
+$P' = suma(-,continue \quad e'' \quad 0); suma(2,-); \square \succ 3)$\\
+$P'' = suma(3,-);suma(2,-; \square)$\\
+
+$$suma(-,e');\square \succ 2 \rightarrow_{\mathcal{K}}$$
+$$suma(-,e');\square \prec 2 \rightarrow_{\mathcal{K}}$$
+$$suma(2,-);\square \succ e' \rightarrow_{\mathcal{K}}$$
+$$(3 + (continue \quad k 0))[k:=e''] \rightarrow_{\mathcal{K}}$$
+$$suma(2,-);\square \succ 3 + (continue \quad e'' \quad 0) \rightarrow_{\mathcal{K}}$$
+$$P' \succ 3 \rightarrow_{\mathcal{K}}$$
+$$P' \prec 3 \rightarrow_{\mathcal{K}}$$
+$$P'' \prec continue \quad e'' \quad 0 \rightarrow_{\mathcal{K}}$$
+$$continue(-,0);P'' \succ e'' \rightarrow_{\mathcal{K}}$$
+$$continue(-,0);P'' \prec e'' \rightarrow_{\mathcal{K}}$$
+$$continue(e'',-);P'' \succ 0 \rightarrow_{\mathcal{K}}$$
+$$continue(e'',-);P'' \prec 0 \rightarrow_{\mathcal{K}}$$
+$$suma(2,-);\square \prec 0 \rightarrow_{\mathcal{K}}$$
+$$\square \prec 2$$
+
+\item $p_{4} \rightleftharpoons$ 
+ \begin{lstlisting}[mathescape=true]
+      e = if $\neg$true then 2 else  (letcc k in 1 + (continue k 2)) 
+		\end{lstlisting}
+		
+Renombraremos algunas expresiones, por el tamaño que  tienen, de la siguiente forma:
+
+$e' = 2$\\
+$e'' = letcc \quad k \quad in \quad 1 + (continue \quad k \quad 2)$
+		
+$$\square \succ  e \rightarrow_{\mathcal{K}}$$
+$$ if(-,e',e''; \square \succ \neg true) \rightarrow_{\mathcal{K}}$$
+$$not(-);if(-,e',e''); \succ true \rightarrow_{\mathcal{K}}$$
+$$not(-);if(-,e',e''); \prec true \rightarrow_{\mathcal{K}}$$
+$$if(-,e',e''); \succ false \rightarrow_{\mathcal{K}}$$
+$$if(-,e',e''); \prec false \rightarrow_{\mathcal{K}}$$
+$$if(false,e',e''); \succ e'' \rightarrow_{\mathcal{K}}$$
+$$suma(-,continue(cont(\square),2)); \square \succ 1 \rightarrow_{\mathcal{K}}$$
+$$suma(-,continue(cont(\square),2)); \square \prec 1 \rightarrow_{\mathcal{K}}$$
+$$suma(1,-);\square continue(cont(\square),2) \rightarrow_{\mathcal{K}}$$
+$$continue(-,2); suma(1,-); \square \succ cont(\square) \rightarrow_{\mathcal{K}}$$
+$$continue(-,2); suma(1,-); \square \prec cont(\square) \rightarrow_{\mathcal{K}}$$
+$$continue(cont(\square),-); suma(1,-); \square \succ 2 \rightarrow_{\mathcal{K}}$$
+$$continue(cont(\square),-); suma(1,-); \square \prec 2 \rightarrow_{\mathcal{K}}$$
+$$\square \prec 2$$
+
+\end{itemize}	
+\end{document}

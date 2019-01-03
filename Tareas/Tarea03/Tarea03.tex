@@ -1,0 +1,212 @@
+\documentclass[11pt, a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{indentfirst}
+
+
+
+\begin{document}
+\title{Tarea 3: \\Lenguajes de Programaci\'on}
+\author{
+  Araujo Chavez Mauricio\\
+  \texttt{312210047}
+  \and
+  Carmona Mendoza Mart\'in\\
+  \texttt{313075977}
+}
+\date{}
+\maketitle
+
+\section*{1. Escribe las reglas de tipado (semántica estática) para cada una de las expresiones anteriores.}
+Considera la gramática:
+$$ e\ ::=\ x|n|true|false|e+e|if\ e\ then\ e\ else\ e|iszero\ e|let\ x=e\ in\ e\ end|e<e|e=e|\neg e  $$ 
+con $n\in \mathbb{Z}$. La extensión al paradigma imperativo se hace de la siguiente manera:
+$$ l_{n}|e_{1}\ :=\ e_{2}|ref\ e|!e|e_{1};e_{2}|while\ e_{1}\ do\ e_{2}|() $$
+\begin{itemize}
+	\item $x$
+		  $$ \frac{}{\Gamma,x:T\vdash x:T} $$
+	\item $n$
+		  $$ \frac{}{\Gamma\vdash num[n]:Nat} $$
+	\item $true$
+		  $$ \frac{}{\Gamma\vdash bool[true]:Bool} $$
+	\item $false$
+		  $$ \frac{}{\Gamma\vdash bool[false]:Bool} $$
+	\item $e_{1}+e_{2}$
+		  $$ \frac{\Gamma\vdash e_{1}:Nat\ \ \ \ \Gamma \vdash e_{2}:Nat}{\Gamma\vdash e_{1}+e_{2}:Nat} $$
+	\item $if\ e_{1}\ then\ e_{2}\ else\ e_{3} $
+		  $$ \frac{\Gamma\vdash e_{1}:Bool\ \ \Gamma\vdash e_{2}:T\ \ \Gamma\vdash e_{3}:T}{\Gamma\vdash if(e_{1},e_{2},e_{3}):T} $$
+	\item $iszero\ e$
+		  $$ \frac{\Gamma\vdash e:Nat}{\Gamma\vdash iszero\ e:Bool} $$
+	\item $let\ x=e_{1}\ in\ e_{2}\ end $
+		  $$ \frac{\Gamma\vdash e_{1}:T\ \ \ \Gamma,x:T\vdash e_{2}:S}{\Gamma\vdash let(e_{1},x.e_{2}):S} $$
+	\item $e_{1}<e_{2}$
+		  $$ \frac{\Gamma\vdash e_{1}:Nat\ \ \ \ \Gamma\vdash e_{2}:Nat}{\Gamma\vdash e_{1}<e_{2}:Bool}$$
+	\item $e_{1}=e_{2}$
+		  $$ \frac{\Gamma\vdash e_{1}:T\ \ \ \ \Gamma,e_{1}:T\vdash e_{2}:T}{\Gamma\vdash e_{1}=e_{2}:T} $$
+	\item $\neg\ e $
+		  $$ \frac{\Gamma\vdash e:Bool}{\Gamma\vdash \neg\ e:Bool} $$
+	\item $l_{n}$
+		  $$\frac{\Sigma(l)=T}{\Gamma\mid\Sigma\vdash l:Ref\ T} $$
+	\item $e_{1}:=\ e_{2}$
+		  $$\frac{\Gamma\mid\Sigma\vdash e_{1}:Ref\ T\ \ \ \ \Gamma\mid\Sigma\vdash e_{2}:T}{\Gamma\mid\Sigma\vdash e_{1}:=e_{2}:Void} $$		  
+	\item $ref\ e $
+		  $$\frac{\Gamma\mid\Sigma\vdash e:T}{\Gamma\mid\Sigma\vdash ref\ e:Ref\ T} $$
+	\item $!e$
+		  $$\frac{\Gamma\mid\Sigma\vdash e:Ref\ T}{\Gamma\mid\Sigma\vdash !e:T} $$
+	\item $e_{1};e_{2} $
+		  $$ \frac{\Gamma\vdash e_{1}:Void \ \ \ \ \Gamma\vdash e_{2}:T}{\Gamma\vdash e_{1};e_{2}:T} $$
+	\item $while\ e_{1}\ do\ e_{2} $
+		  $$\frac{\Gamma\mid\Sigma\vdash e_{1}:Bool\ \ \ \ \Gamma\mid\Sigma\vdash e_{2}:Void}{\Gamma\mid\Sigma\vdash e_{1}:while(e_{1},e_{2}):Void} $$
+	\item $()$
+		  $$\frac{}{\Gamma\mid\Sigma\vdash ():Void} $$
+\end{itemize}
+\section*{2. Considera los siguientes programas. Escribe la derivación de tipos de los tres programas descritos.}
+\begin{itemize}
+	\item $p_{1} \rightleftharpoons$
+		\begin{lstlisting}
+     let x = ref (iszero(3+4)) in
+	     let y = ref (if !x then 3 else 4) in
+		     let z = if !y < 10 then !y + 6 else 7+!y
+	     end
+     end
+		\end{lstlisting}
+		Denotamos e como let y = ref (if !x then 3 else 4) in let z = if !y < 10 then !y + 6 else 7+!y end
+		$$ \emptyset \mid \emptyset \vdash let\ x=ref(iszero(3+4))\ in\ e\ end:S $$
+		$$ \emptyset \mid \emptyset \vdash ref(iszero(3+4)):Ref\ Bool $$
+		$$ \emptyset \mid \emptyset \vdash iszero(3+4):Bool $$
+		$$ \emptyset \mid \emptyset \vdash 3+4:Nat $$
+		$$ \emptyset \mid \emptyset \vdash 3:Nat $$
+		$$ \emptyset \mid \emptyset \vdash 4:Nat $$		
+		$$ x:Bool\mid \emptyset \vdash e:S $$
+		Equivalentemente definimos $e_{1}$ como let z = if !y $<$ 10 then !y + 6 else 7+!y
+		$$ x:Bool\mid \emptyset \vdash let\ y\ =\ ref\ (if !x then 3 else 4)\ in\ e_{1}\ end:S$$
+		$$ x:Bool\mid \emptyset \vdash ref\ (if !x then 3 else 4):Ref\ Nat $$
+		$$ x:Bool\mid \emptyset \vdash if\ !x\ then\ 3\ else\ 4:Nat $$
+		$$ x:Bool\mid \emptyset \vdash !x:Bool $$
+		$$ x:Bool\mid l_{x}:Bool \vdash l_{x}:Ref\ Bool$$
+		$$ x:Bool\mid l_{x}:Ref\ Bool \vdash l_{x}:Bool$$
+		$$ x:Bool\mid l_{x}:Bool \vdash 3:Nat $$
+		$$ x:Bool\mid l_{x}:Bool \vdash 4:Nat$$
+		Continuamos con $e_{1}$ y suponemos que si tiene end para ejecutar bien el tipado.\\
+		$e_{1}$ = let z = if !y $<$ 10 then !y + 6 else 7+!y end
+		$$ x:Bool,y:Nat\mid \emptyset \vdash let\ z\ =\ if\ !y\ <\ 10\ then\ !y\ +\ 6\ else\ 7+!y\ end:S $$
+		$$ x:Bool,y:Nat\mid \emptyset \vdash !y:Nat $$
+		$$ x:Bool,y:Nat\mid l_{y}:Nat \vdash l_{y}:Ref\ Nat$$
+		$$ x:Bool,y:Nat\mid l_{y}:Ref\ Nat \vdash l_{y}:Nat $$
+		$$ x:Bool,y:Nat\mid l_{y}:Nat \vdash 10:Nat $$
+		$$ x:Bool,y:Nat\mid l_{y}:Nat \vdash 6:Nat $$
+		$$ x:Bool,y:Nat\mid l_{y}:Nat \vdash l_{y}\ <\ 10:Nat $$		
+		$$ x:Bool,y:Nat\mid l_{y}:Nat \vdash l_{y}\ +\ 6:Nat$$
+		$$ x:Bool,y:Nat\mid l_{y}:Nat \vdash 7:Nat $$
+		$$ x:Bool,y:Nat\mid l_{y}:Nat \vdash 7\ +\ l_{y}:Nat $$
+		$$ x:Bool,y:Nat,z:Nat\mid \emptyset \vdash \emptyset $$
+	\item $p_{2} \rightleftharpoons$
+		\begin{lstlisting}
+	 let z = ref 5 in
+	 	 let w = ref 3 in
+	 	     while (0 < !w)
+	 	         z := 5+3;
+	 	         w := !w-1
+	 	 end
+	 	 !z
+	 end
+		\end{lstlisting}
+		Definimos e como let w = ref 3 in while (0 $<$ !w) z := 5+3; w := !w-1 end
+		$$ \emptyset \mid \emptyset \vdash let\ z\ =\ ref\ 5\ in\ e\ !z\ end:S $$
+		$$ \emptyset \mid \emptyset \vdash ref\ 5:Nat $$
+		$$ \emptyset \mid \emptyset \vdash 5:Nat $$
+		$$ z:Nat\mid \emptyset \vdash e:S $$
+		Definimos $e_{1}$ como while (0 $<$ !w) z := 5+3; w := !w-1
+		$$ z:Nat\mid \emptyset \vdash let\ w\ ref\ 3\ in\ e_{1}\ end\ !z:S $$
+		$$ z:Nat\mid \emptyset \vdash ref\ 3:Nat $$
+		$$ z:Nat\mid \emptyset \vdash 3:Nat $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash e_{1}:S$$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash while\ (0\ <\ !w)\ z\ :=\ 5+3;\ w\ :=\ !w-1 end:S $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash (0\ <\ !w):Bool $$		
+		$$ z:Nat,w:Nat\mid \emptyset \vdash l_{w}:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash l_{w}:Ref\ Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Ref\ Nat \vdash l_{w}:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash 0:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash z\ :=\ 5+3;\ w\ :=\ !w-1:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash z\ :=\ 5+3:Void $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash z:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash 5+3:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash 5:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash 3:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash w\ :=\ !w-1:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash w:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash !w:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash 1:Nat $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash !z:Nat $$
+		$$ z:Nat,w:Nat\mid l_{z}:Nat \vdash l_{z}:Ref\ Nat $$
+		$$ z:Nat,w:Nat\mid l_{z}:Ref\ Nat \vdash l_{z}:Nat $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash \emptyset $$
+	\item $p_{3} \rightleftharpoons$
+		\begin{lstlisting}
+	 let z = ref 10 in
+	     let w = ref 7 in
+	         while (0 < !w)
+	             z := !z-1;
+	             w := !w-1
+	     end
+	     if !z = 3 then true else false
+	 end
+		\end{lstlisting}
+		Definimos e como let w = ref 7 in while (0 $<$ !w) z := !z-1; w := !w-1 end\\
+		$$ \emptyset \mid \emptyset \vdash let\ z\ =\ ref\ 10\ in\ e\ if\ !z\ =\ 3\ then\ true\ else\ false\ end:S$$
+		$$ \emptyset \mid \emptyset \vdash ref\ 10:Nat $$
+		$$ \emptyset \mid \emptyset \vdash 10:Nat $$
+		$$ z:Nat\mid \emptyset \vdash e:S$$
+		Definimos $e_{1}$ como while (0 $<$ !w) z := !z-1; w := !w-1
+		$$ z:Nat\mid \emptyset \vdash let\ w\ =\ ref\ 7\ in\ e_{1}\ end $$
+		$$ z:Nat\mid \emptyset \vdash ref\ 7:Nat $$
+		$$ z:Nat\mid \emptyset \vdash 7:Nat $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash e_{1}:S $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash while\ (0\ <\ !w)\ z\ :=\ !z-1;\ w\ :=\ !w-1\ end:S $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash (0\ <\ !w):Bool $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash 0:Nat $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash !w:Nat $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash l_{w}:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash z\ :=\ !z-1;w\ :=\ !w-1:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash z\ :=\ !z-1:Void $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash z:Ref\ Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash z:Nat$$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash !z-1:Nat$$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash 1:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash !z:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat \vdash l_{z}:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash w\ :=\ !w-1:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash w:Ref\ Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash w:Nat$$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash !w-1:Nat$$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash 1:Nat$$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash !w:Nat$$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash l_{w}:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash if\ !z\ =\ 3\ then\ true\ else\ false\ end$$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash !z\ =\ 3:Bool $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash !z:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash l_{z}:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash 3:Nat $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash true:Bool $$
+		$$ z:Nat,w:Nat\mid l_{w}:Nat,l_{z}:Nat \vdash false:Bool $$
+		$$ z:Nat,w:Nat\mid \emptyset \vdash \emptyset $$
+\end{itemize}	
+\section*{3. Define listas ligadas como estructuras de datos efímeras y define una función que obtenga el último elemento de dichas listas (puedes combinar sintaxis de Haskell como se vio en clase).}
+
+data Tlist = Void $|$ Nodo (Elem, Ref Tlist) \\
+
+--Funci\'on \\
+getLast :: Ref Tlis $\rightarrow$  Elem     \\
+getLast lista = case !(lista) of \\
+										Void $\rightarrow$ error "Lista vacia" \\
+										Nodo(Elem, Ref TList) $\rightarrow $ if   !(RefList) == Void \\
+															 														  then  Elem \\
+																													  else  getLast (Ref TList) 
+\end{document}

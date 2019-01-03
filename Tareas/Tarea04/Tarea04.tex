@@ -1,0 +1,114 @@
+\documentclass[11pt, a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{listings}
+
+\begin{document}
+\title{Tarea 4: \\Lenguajes de Programaci\'on}
+\author{
+  Araujo Chávez Mauricio\\
+  \texttt{312210047}
+  \and
+  Carmona Mendoza Mart\'in\\
+  \texttt{313075977}
+}
+\date{}
+\maketitle
+
+\section*{1. Considera la siguiente gramatica. Describe todos los marcos de operación}
+$$ e\ :=\ x\mid n\mid true\mid false\mid \neg e\mid e+e\mid if\ e\ then\ e\ else\ e\mid let\ x\ =\ e\ in\ e\mid e\ <\ e\mid \lambda x.e\mid e\ e $$
+	\begin{itemize}
+		\item Tomamos a x, n, true y false como valores, ya que no necesitan un marco.
+		\item $\neg e$
+			$$ \frac{}{not(-)\ marco} $$
+		\item $e_{1}+e_{2}$
+			$$ \frac{}{suma(-,e_{1})\ marco}\ \ \ \ \frac{}{suma(v_{1},-)\ marco} $$
+		\item $if\ e\ then\ e_{1}\ else\ e_{2}$
+			$$ \frac{}{if(-,e_{1},e_{2})\ marco} $$
+		\item $let\ x\ =\ e\ in\ e_{2}$
+			$$ \frac{}{let(-,x.e_{2})\ marco} $$
+		\item $ e_{1}\ <\ e_{2} $
+			$$ \frac{}{menor(-,e_{2})\ marco}\ \ \ \ \frac{}{menor(v_{1},-)\ marco} $$
+		\item $\lambda x.e$
+			$$ \frac{}{app(\lambda(T.x.e),-)\ marco}\ \ \ \ \frac{}{e[x:=v_{1}]\ marco} $$
+		\item $e_{1}\ e_{2}$
+			$$ \frac{}{app(-,e_{2})\ marco}\ \ \ \ \frac{}{app(v_{1},-)\ marco} $$
+	\end{itemize}
+\section*{2. Escribe tres programas y ejecútalos en la máquina $\mathcal{K}$. Debes usar por lo menos cuatro expresiones distintas en cada programa y entre los tres programas debes haber utilizado todas las expresiones del lenguaje.}
+	\begin{itemize}
+		\item $p_{1} \rightleftharpoons$
+		\begin{lstlisting}
+		let x = 2 in 
+			x + (if not(x < 3) then 10 else 30)
+		end
+		\end{lstlisting}		
+		$$ \Box \succ p_{1} \rightarrow_{\mathcal{K}}$$
+		Definimos l como x + (if not(x $<$ 3) then 10 else 30)
+		$$ (-,x.l);\Box \succ 2 \rightarrow_{\mathcal{K}} $$
+		$$ (-,x.l);\Box \prec 2 \rightarrow_{\mathcal{K}} $$
+		Obtenemos 2 + (if not(2 $<$ 3) then 10 else 30)
+		$$ (2,-);\Box \prec (if\ not(2 < 3)\ then\ 10\ else\ 30) \rightarrow_{\mathcal{K}}$$
+		$$ if(-,10,30);(2,-);\Box \prec not(2<3) \rightarrow_{\mathcal{K}}$$
+		Al tener valores omitimos pasos triviales de $<$
+		$$ if(-,10,30);(2,-);\Box \prec not\ true \rightarrow_{\mathcal{K}}$$
+		$$ if(-,10,30);(2,-);\Box \succ false \rightarrow_{\mathcal{K}}$$
+		$$ if(-,10,30);(2,-);\Box \prec false \rightarrow_{\mathcal{K}} $$
+		$$ (2,-);\Box \succ 30 \rightarrow_{\mathcal{K}}$$
+		Trivialmente sumamos 2 + 30
+		$$ \Box \prec 32 $$
+		\item $p_{2} \rightleftharpoons$
+		\begin{lstlisting}[mathescape=true]
+			app(if(($\lambda$x.(not x)true) 
+				then $\lambda$y.(y+6) 
+				else $\lambda$z(z+0)
+				,7)
+		\end{lstlisting}
+		$$ \Box \succ p_{2} \rightarrow_{\mathcal{K}}$$
+		Definimos l como if($\lambda$x.(not x)true) then $\lambda$y.(y+x) else $\lambda$z(z+0)
+		$$ app(-,7); \Box \succ l \rightarrow_{\mathcal{K}} $$
+		$$ if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \succ (\lambda x.(not\ x))true \rightarrow_{\mathcal{K}}  $$
+		$$ app(-,true);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \succ \lambda x.(not\ x) \rightarrow_{\mathcal{K}}$$
+		$$ app(-,true);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \prec \lambda x.(not\ x) \rightarrow_{\mathcal{K}} $$
+		$$ app(\lambda x.(not\ x),-);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \succ true  \rightarrow_{\mathcal{K}} $$
+		$$ app(\lambda x.(not\ x),-);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \prec true  \rightarrow_{\mathcal{K}} $$
+		$$ if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \succ (not\ x)[x\ :=\ true]  \rightarrow_{\mathcal{K}} $$
+		$$ if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \succ not\ true \rightarrow_{\mathcal{K}} $$
+		$$ not(-);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \succ true \rightarrow_{\mathcal{K}} $$
+		$$ not(-);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \prec true \rightarrow_{\mathcal{K}} $$		
+		$$ if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7); \Box \prec false \rightarrow_{\mathcal{K}} $$
+		$$ app(-,7); \Box \succ \lambda z(z+0) \rightarrow_{\mathcal{K}} $$
+		$$ app(-,7); \Box \prec \lambda z(z+0) \rightarrow_{\mathcal{K}} $$
+		$$ app(\lambda z(z+0),); \Box \succ 7 \rightarrow_{\mathcal{K}} $$
+		$$ app(\lambda z(z+0),); \Box \prec 7 \rightarrow_{\mathcal{K}} $$
+		$$ \Box \succ (z\ + \ 0)[z\ :=\ 7] $$
+		Trivialmente sumamos 7 + 0
+		$$ \Box \succ 7  $$
+		\item $p_{3} \rightleftharpoons$
+		\begin{lstlisting}
+		let x = 4 in 
+			let y = 7 in
+				if(x<y) then (x+x) + y else 0
+			end
+		end
+		\end{lstlisting}
+		Definimos $l_{1}$ como let y = 7 in if(x$<$y) then (x+x) + y else 0	end
+		
+		$$ \Box \succ p_{3} \rightarrow_{\mathcal{K}}$$
+		$$ (-,x.l_{1});\Box \succ 4 \rightarrow_{\mathcal{K}} $$
+		$$ (-,x.l_{1});\Box \prec 4 \rightarrow_{\mathcal{K}} $$
+		Obtenemos: let y = 7 in if(4$<$y) then (4+4) + y else 0	end\\
+		Definimos $l_{2}$ como if(4$<$y) then (4+4) + y else 0
+		$$ (-,y.l_{2});\Box \succ 7 \rightarrow_{\mathcal{K}} $$
+		$$ (-,y.l_{2});\Box \prec 7 \rightarrow_{\mathcal{K}} $$
+		Obtenemos: if (4 < 7) then (4+4) + 7 else 0
+		$$ \rightarrow_{\mathcal{K}}*\ (4 < 7)=true $$
+		$$ \rightarrow_{\mathcal{K}}*\ (4+4)+4 $$
+		$$ \rightarrow_{\mathcal{K}}*\ \Box \prec 12 $$
+	\end{itemize}
+\end{document}

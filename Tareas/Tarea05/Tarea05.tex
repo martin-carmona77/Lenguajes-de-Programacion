@@ -1,0 +1,134 @@
+\documentclass[11pt, a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{listings}
+\newcommand{\precprec}{\prec\mathrel{\mkern-5mu}\prec}
+\begin{document}
+\title{Tarea 5: \\Lenguajes de Programaci\'on}
+\author{
+  Araujo Chávez Mauricio\\
+  \texttt{312210047}
+  \and
+  Carmona Mendoza Mart\'in\\
+  \texttt{313075977}
+}
+\date{}
+\maketitle
+
+\section*{Considera la gramática descrita en la tarea pasada.}
+\begin{enumerate}
+	\item 
+		\begin{itemize}
+		 	\item Extiende la gramatica de la tarea pasada con los marcos de operación de las expresiones error y try e1 catch e2 vistas en clase y describe los marcos de operacion (no es necesario describir los marcos descritos en la tarea pasada).
+		 	\\\textbf{error}
+		 	\\Denotamos error como un nuevo estado de la máquina denotado por
+		 	$$ \mathcal{P} \precprec error$$
+		 	Donde el erorr va vaciando la pila hasta encontrar un manejador y dado el caso que no existe la expresión anterior se considera como estado final.
+		 	$$ Donde\ \mathcal{P}\ es\ la\ pila.$$
+		 	\textbf{try e1 catch e2}
+		 	\\Se ejecuta e1 y se espera un valor para manejar el error si es que existe.
+		 	$$ \frac{}{catch(-,e_{2})\ marco} $$
+		 	\item Escribe cuatro programas utilizando la gramatica descrita. Todos deben estar contenidos en un try catch, dos de ellos deben arrojar un error (y manejarlo) y dos de ellos deben terminar sin utilizar el marco del catch. Entre los cuatro programas debes utilizar todos las expresiones del lenguaje.
+		 		\begin{itemize}
+		 			\item $p_{1} \leftrightharpoons$
+		 			\begin{lstlisting}
+	try
+		let x = 2 in
+			x + (if not(x < 3) then 10 else error)
+		end
+	catch error
+		show "El numero es menor que 3"
+		 			\end{lstlisting}
+		 			\item $p_{2} \leftrightharpoons$
+		 			\begin{lstlisting}[mathescape=true]
+	try
+		app(if(($\lambda$x.(not x)true) 
+			then $\lambda$y.(y+6) 
+			else $\lambda$z(z+0)
+			,7)
+	catch error
+		show "Valor incorrecto"
+		 			\end{lstlisting}
+		 		\end{itemize}
+		 	\item Realiza la ejecucion de los cuatro programas, puedes obviar algunas operaciones excepto aquellas que involucran la expresion try-catch.
+		 		\begin{itemize}
+		 			\item $p_{1} \leftrightharpoons$
+		 				\\Definimos e1 como let x = 2 in x + (if not(x $<$ 3) then 10 else error) end\\
+		 				y e2 como show "El numero es menor que 3"
+		 				$$ \Box \succ p_{1} \rightarrow_{\mathcal{K}}$$
+		 				$$ catch(-,e_{2});\Box \succ e_{1} \rightarrow_{\mathcal{K}}$$
+		 				Definimos l como x + (if not(x $<$ 3) then 10 else 30)
+		 				$$ (-,x.l),catch(-,e_{2});\Box \succ 2 \rightarrow_{\mathcal{K}} $$
+		 				$$ (-,x.l),catch(-,e_{2});\Box \prec 2 \rightarrow_{\mathcal{K}} $$
+		 				Obtenemos 2 + (if not(2 $<$ 3) then 10 else error)
+		 				$$ (2,-),catch(-,e_{2});\Box \prec (if\ not(2 < 3)\ then\ 10\ else\ error) \rightarrow_{\mathcal{K}}$$
+		 				$$ if(-,10,error);(2,-),catch(-,e_{2});\Box \prec not(2<3) \rightarrow_{\mathcal{K}}$$
+		 				Al tener valores omitimos pasos triviales de $<$
+		 				$$ if(-,10,error);(2,-),catch(-,e_{2});\Box \prec not\ true \rightarrow_{\mathcal{K}}$$
+		 				$$ if(-,10,error);(2,-),catch(-,e_{2});\Box \succ false \rightarrow_{\mathcal{K}}$$
+		 				$$ if(-,10,error);(2,-),catch(-,e_{2});\Box \prec false \rightarrow_{\mathcal{K}} $$
+		 				$$ (2,-),catch(-,e_{2});\Box \succ error \rightarrow_{\mathcal{K}}$$
+		 				Propagamos el error
+		 				$$ (2,-),catch(-,e_{2});\Box \precprec error \rightarrow_{\mathcal{K}} $$
+		 				Y al tener $catch(-,e_{2})$ podemos continuar con la ejecución de $e_{2}$
+		 				$$ catch(error,-)\Box \succ e_{2} \rightarrow_{\mathcal{K}} $$
+		 				Intuitivamente, el programa imprimirá la leyenda.
+		 				$$ \Box \succ "El\ numero\ es\ menor\ que\ 3" $$
+		 			\item $p_{2} \leftrightharpoons$
+		 				\\Definimos e1 como app(if($\lambda$x.(not x)true) then $\lambda$y.(y+x) else $\lambda$z(z+),7)\\
+		 				y e2 como show "Valor incorrecto"
+		 				$$ \Box \succ p_{2} \rightarrow_{\mathcal{K}}$$
+		 				$$ catch(-,e_{2}); \Box \succ e_{1} \rightarrow_{\mathcal{K}}$$
+		 				Definimos l como if($\lambda$x.(not x)true) then $\lambda$y.(y+x) else $\lambda$z(z+0)
+		 				$$ app(-,7),catch(-,e_{2}); \Box \succ l \rightarrow_{\mathcal{K}} $$
+		 				$$ if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \succ (\lambda x.(not\ x))true \rightarrow_{\mathcal{K}}  $$
+		 				$$ app(-,true);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \succ \lambda x.(not\ x) \rightarrow_{\mathcal{K}}$$
+		 				$$ app(-,true);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \prec \lambda x.(not\ x) \rightarrow_{\mathcal{K}} $$
+		 				$$ app(\lambda x.(not\ x),-);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \succ true  \rightarrow_{\mathcal{K}} $$
+		 				$$ app(\lambda x.(not\ x),-);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \prec true  \rightarrow_{\mathcal{K}} $$
+		 				$$ if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \succ (not\ x)[x\ :=\ true]  \rightarrow_{\mathcal{K}} $$
+		 				$$ if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \succ not\ true \rightarrow_{\mathcal{K}} $$
+		 				$$ not(-);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \succ true \rightarrow_{\mathcal{K}} $$
+		 				$$ not(-);if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \prec true \rightarrow_{\mathcal{K}} $$		
+		 				$$ if(-,\lambda y.(y+x),\lambda z(z+0);app(-,7),catch(-,e_{2}); \Box \prec false \rightarrow_{\mathcal{K}} $$
+		 				$$ app(-,7),catch(-,e_{2}); \Box \succ \lambda z(z+0) \rightarrow_{\mathcal{K}} $$
+		 				$$ app(-,7),catch(-,e_{2}); \Box \prec \lambda z(z+0) \rightarrow_{\mathcal{K}} $$
+		 				$$ app(\lambda z(z+0),),catch(-,e_{2}); \Box \succ 7 \rightarrow_{\mathcal{K}} $$
+		 				$$ app(\lambda z(z+0),),catch(-,e_{2}); \Box \prec 7 \rightarrow_{\mathcal{K}} $$
+		 				$$ catch(-,e_{2});\Box \succ (z\ + \ 0)[z\ :=\ 7] $$
+		 				Trivialmente sumamos 7 + 0
+		 				$$ catch(-,e_{2});\Box \succ 7 \rightarrow_{\mathcal{K}} $$
+		 				Al devolver un valor e1 se elimina el marco manejador y sigue ejecución sin salto.
+		 				$$ \Box \succ 7  $$ 
+		 		\end{itemize}
+		 \end{itemize} 
+	\item
+		\begin{itemize}
+			\item Extiende la gramatica de la tarea pasada con los marcos de operación de las expresiones $raise(e)$ y $handle\ e1\ with\ x\Rightarrow e2$ vistas en clase y describe los marcos de operacion (no es necesario describir los marcos descritos en la tarea pasada).
+			\\\textbf{raise(e)}
+			\\Lanzamos el error esperando un valor de e.
+			$$ \frac{}{raise(-)\ marco} $$
+			\textbf{handle e1 with x $\Rightarrow$ e2}
+			\\Manejamos un error con x aplicandolo a e2.
+			$$ \frac{}{handle(-,x.e_{2})\ marco} $$
+			\item Extiende el comportamiento de la maquina $\mathcal{K}$
+			\\Extendemos de la siguiente manera.
+			\\\textbf{raise}
+			$$ \frac{}{\mathcal{P} \succ raise(e) \rightarrow_{\mathcal{K}} raise(-);\ \mathcal{P} \succ e}$$			
+			$$ \frac{}{raise(-);\ \mathcal{P} \prec v \rightarrow_{\mathcal{K}} \mathcal{P} \precprec raise(v)}$$
+			\textbf{handle}
+			$$ \frac{}{\mathcal{P} \succ handle(e_{1},x.e_{2}) \rightarrow_{\mathcal{K}} handle(-,x.e_{2});\ \mathcal{P} \succ e_{1} } $$
+			$$ \frac{}{handle(-,x.e_{2});\ \mathcal{P} \prec v \rightarrow_{\mathcal{K}} \mathcal{P} \prec v } $$
+			$$ \frac{m \neq handle(-,x.e_{2})}{m;\mathcal{P} \precprec raise(v) \rightarrow_{\mathcal{K}} \mathcal{P} \precprec raise(v) } $$
+			$$ \frac{}{handle(-,x.e_{2});\mathcal{P} \precprec raise(v) \rightarrow_{\mathcal{K}} \mathcal{P} \succ e_{2}[x\ :=\ v] } $$
+			\item Escribe cuatro programas utilizando la gramatica descrita. Todos deben estar contenidos en un handle, dos de ellos deben arrojar un error con valor (y manejarlo) y dos de ellos deben terminar sin utilizar el manejador. Entre los cuatro programas debes utilizar todos las expresiones del lenguaje.
+			\item Realiza la ejecucion de los cuatro programas, puedes obviar algunas operaciones excepto aquellas que involucran la expresiones raise y handle.
+		\end{itemize}
+\end{enumerate}
+\end{document}
